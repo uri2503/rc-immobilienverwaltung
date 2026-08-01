@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Einheit, Objekt } from "@/lib/types";
 import { formatCurrency, formatDate, objektStatusLabel, objektTypLabel } from "@/lib/labels";
-import { buttonClass, dangerButtonClass, secondaryButtonClass } from "@/components/form";
+import { buttonClass, secondaryButtonClass } from "@/components/form";
+import { DeleteForm } from "@/components/delete-form";
 import { deleteObjekt } from "../actions";
 
 export default async function ObjektDetailPage({
@@ -44,11 +45,10 @@ export default async function ObjektDetailPage({
           <Link href={`/objekte/${typedObjekt.id}/bearbeiten`} className={secondaryButtonClass}>
             Bearbeiten
           </Link>
-          <form action={deleteObjekt.bind(null, typedObjekt.id)}>
-            <button type="submit" className={dangerButtonClass}>
-              Löschen
-            </button>
-          </form>
+          <DeleteForm
+            action={deleteObjekt.bind(null, typedObjekt.id)}
+            confirmMessage={`Objekt „${typedObjekt.name}" wirklich löschen?`}
+          />
         </div>
       </div>
 

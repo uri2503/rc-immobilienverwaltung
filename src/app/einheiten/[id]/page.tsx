@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Einheit, VertragArt } from "@/lib/types";
 import { formatDate, vertragArtLabel } from "@/lib/labels";
-import { buttonClass, dangerButtonClass, secondaryButtonClass } from "@/components/form";
+import { buttonClass, secondaryButtonClass } from "@/components/form";
+import { DeleteForm } from "@/components/delete-form";
 import { deleteEinheit } from "../actions";
 
 interface VertragRow {
@@ -58,11 +59,10 @@ export default async function EinheitDetailPage({
           <Link href={`/einheiten/${id}/bearbeiten`} className={secondaryButtonClass}>
             Bearbeiten
           </Link>
-          <form action={deleteEinheit.bind(null, id, objekt.id)}>
-            <button type="submit" className={dangerButtonClass}>
-              Löschen
-            </button>
-          </form>
+          <DeleteForm
+            action={deleteEinheit.bind(null, id, objekt.id)}
+            confirmMessage={`Einheit „${(einheit as Einheit).bezeichnung}" wirklich löschen?`}
+          />
         </div>
       </div>
 

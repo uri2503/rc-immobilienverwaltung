@@ -1,7 +1,13 @@
+"use client";
+
+import { useActionState } from "react";
 import type { Objekt } from "@/lib/types";
 import { OBJEKT_STATUS, OBJEKT_TYPEN } from "@/lib/types";
 import { objektStatusLabel, objektTypLabel } from "@/lib/labels";
 import { Field, buttonClass, inputClass, secondaryButtonClass } from "@/components/form";
+import { FormError } from "@/components/form-error";
+import type { ActionState } from "@/lib/action-state";
+import { initialActionState } from "@/lib/action-state";
 import Link from "next/link";
 
 export function ObjektForm({
@@ -9,10 +15,14 @@ export function ObjektForm({
   action,
 }: {
   objekt?: Objekt;
-  action: (formData: FormData) => Promise<void>;
+  action: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
+  const [state, formAction, isPending] = useActionState(action, initialActionState);
+
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
+    <form action={formAction} className="flex max-w-xl flex-col gap-4">
+      <FormError message={state.error} />
+
       <Field label="Name" htmlFor="name">
         <input
           id="name"
@@ -101,8 +111,8 @@ export function ObjektForm({
       </div>
 
       <div className="flex gap-3 pt-2">
-        <button type="submit" className={buttonClass}>
-          Speichern
+        <button type="submit" disabled={isPending} className={buttonClass}>
+          {isPending ? "Speichert …" : "Speichern"}
         </button>
         <Link
           href={objekt ? `/objekte/${objekt.id}` : "/objekte"}

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { ActionState } from "@/lib/action-state";
 import type { VertragArt, Zahlungsintervall } from "@/lib/types";
 
 function toNumberOrNull(value: FormDataEntryValue | null): number | null {
@@ -31,7 +32,10 @@ function vertragPayload(formData: FormData) {
   };
 }
 
-export async function createVertrag(formData: FormData) {
+export async function createVertrag(
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("immo_vertrag")
@@ -39,31 +43,38 @@ export async function createVertrag(formData: FormData) {
     .select("id")
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
 
   revalidatePath("/vertraege");
   redirect(`/vertraege/${data.id}`);
 }
 
-export async function updateVertrag(id: string, formData: FormData) {
+export async function updateVertrag(
+  id: string,
+  _prevState: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("immo_vertrag")
     .update(vertragPayload(formData))
     .eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
 
   revalidatePath("/vertraege");
   revalidatePath(`/vertraege/${id}`);
   redirect(`/vertraege/${id}`);
 }
 
-export async function deleteVertrag(id: string) {
+export async function deleteVertrag(
+  id: string,
+  _prevState: ActionState,
+): Promise<ActionState> {
   const supabase = await createClient();
   const { error } = await supabase.from("immo_vertrag").delete().eq("id", id);
 
-  if (error) throw new Error(error.message);
+  if (error) return { error: error.message };
 
   revalidatePath("/vertraege");
   redirect("/vertraege");

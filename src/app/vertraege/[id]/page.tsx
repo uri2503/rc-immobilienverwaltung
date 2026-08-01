@@ -8,7 +8,8 @@ import {
   vertragArtLabel,
   zahlungsintervallLabel,
 } from "@/lib/labels";
-import { dangerButtonClass, secondaryButtonClass } from "@/components/form";
+import { secondaryButtonClass } from "@/components/form";
+import { DeleteForm } from "@/components/delete-form";
 import { deleteVertrag } from "../actions";
 
 export default async function VertragDetailPage({
@@ -54,11 +55,10 @@ export default async function VertragDetailPage({
           <Link href={`/vertraege/${vertrag.id}/bearbeiten`} className={secondaryButtonClass}>
             Bearbeiten
           </Link>
-          <form action={deleteVertrag.bind(null, vertrag.id)}>
-            <button type="submit" className={dangerButtonClass}>
-              Löschen
-            </button>
-          </form>
+          <DeleteForm
+            action={deleteVertrag.bind(null, vertrag.id)}
+            confirmMessage={`${vertragArtLabel[vertrag.art]}-Vertrag für „${vertrag.einheit.bezeichnung}" wirklich löschen?`}
+          />
         </div>
       </div>
 

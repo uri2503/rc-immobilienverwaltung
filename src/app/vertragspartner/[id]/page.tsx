@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { VertragArt, Vertragspartner } from "@/lib/types";
 import { partnerTypLabel, vertragArtLabel } from "@/lib/labels";
-import { buttonClass, dangerButtonClass, secondaryButtonClass } from "@/components/form";
+import { buttonClass, secondaryButtonClass } from "@/components/form";
+import { DeleteForm } from "@/components/delete-form";
 import { deleteVertragspartner } from "../actions";
 
 interface VertragRow {
@@ -52,11 +53,10 @@ export default async function VertragspartnerDetailPage({
           <Link href={`/vertragspartner/${typedPartner.id}/bearbeiten`} className={secondaryButtonClass}>
             Bearbeiten
           </Link>
-          <form action={deleteVertragspartner.bind(null, typedPartner.id)}>
-            <button type="submit" className={dangerButtonClass}>
-              Löschen
-            </button>
-          </form>
+          <DeleteForm
+            action={deleteVertragspartner.bind(null, typedPartner.id)}
+            confirmMessage={`Vertragspartner „${typedPartner.name}" wirklich löschen?`}
+          />
         </div>
       </div>
 

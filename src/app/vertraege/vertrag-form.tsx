@@ -1,8 +1,14 @@
+"use client";
+
+import { useActionState } from "react";
 import Link from "next/link";
 import type { Vertrag } from "@/lib/types";
 import { VERTRAG_ARTEN, ZAHLUNGSINTERVALLE } from "@/lib/types";
 import { vertragArtLabel, zahlungsintervallLabel } from "@/lib/labels";
 import { Field, buttonClass, inputClass, secondaryButtonClass } from "@/components/form";
+import { FormError } from "@/components/form-error";
+import type { ActionState } from "@/lib/action-state";
+import { initialActionState } from "@/lib/action-state";
 
 interface EinheitOption {
   id: string;
@@ -30,10 +36,14 @@ export function VertragForm({
   defaultEinheitId?: string;
   defaultPartnerId?: string;
   cancelHref: string;
-  action: (formData: FormData) => Promise<void>;
+  action: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
+  const [state, formAction, isPending] = useActionState(action, initialActionState);
+
   return (
-    <form action={action} className="flex max-w-xl flex-col gap-4">
+    <form action={formAction} className="flex max-w-xl flex-col gap-4">
+      <FormError message={state.error} />
+
       <Field label="Einheit" htmlFor="einheit_id">
         <select
           id="einheit_id"
@@ -161,8 +171,8 @@ export function VertragForm({
       </Field>
 
       <div className="flex gap-3 pt-2">
-        <button type="submit" className={buttonClass}>
-          Speichern
+        <button type="submit" disabled={isPending} className={buttonClass}>
+          {isPending ? "Speichert …" : "Speichern"}
         </button>
         <Link href={cancelHref} className={secondaryButtonClass}>
           Abbrechen
