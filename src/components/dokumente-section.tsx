@@ -1,15 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { initialActionState } from "@/lib/action-state";
 import type { Dokument } from "@/lib/types";
 import { DOKUMENT_KATEGORIEN } from "@/lib/types";
 import { dokumentKategorieLabel } from "@/lib/labels";
 import { buttonClass, inputClass } from "@/components/form";
 import { FormError } from "@/components/form-error";
+import { createClient } from "@/lib/supabase/client";
 import {
   deleteDokument,
-  uploadDokument,
+  registrierDokument,
   type DokumentParentField,
 } from "@/app/dokumente/actions";
 
@@ -67,9 +68,48 @@ export function DokumenteSection({
   revalidateTargetPath: string;
 }) {
   const [state, formAction, isPending] = useActionState(
-    uploadDokument.bind(null, parentField, parentId, revalidateTargetPath),
+    registrierDokument.bind(null, parentField, parentId, revalidateTargetPath),
     initialActionState,
   );
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setUploadError(null);
+
+    const form = event.currentTarget;
+    const rawFormData = new FormData(form);
+    const file = rawFormData.get("datei");
+
+    if (!(file instanceof File) || file.size === 0) {
+      setUploadError("Bitte eine Datei auswählen.");
+      return;
+    }
+
+    setIsUploading(true);
+    const path = `${parentField}/${parentId}/${Date.now()}-${file.name}`;
+    const { error: uploadErr } = await createClient()
+      .storage.from("dokumente")
+      .upload(path, file, { contentType: file.type || undefined });
+    setIsUploading(false);
+
+    if (uploadErr) {
+      setUploadError(uploadErr.message);
+      return;
+    }
+
+    const metaFormData = new FormData();
+    metaFormData.set("storage_path", path);
+    metaFormData.set("dateiname", file.name);
+    metaFormData.set("mime_type", file.type);
+    metaFormData.set("groesse_bytes", String(file.size));
+    metaFormData.set("kategorie", String(rawFormData.get("kategorie")));
+    metaFormData.set("beschreibung", String(rawFormData.get("beschreibung") ?? ""));
+
+    formAction(metaFormData);
+    form.reset();
+  }
 
   return (
     <section className="flex flex-col gap-4">
@@ -110,10 +150,10 @@ export function DokumenteSection({
       )}
 
       <form
-        action={formAction}
+        onSubmit={handleSubmit}
         className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 shadow-sm"
       >
-        <FormError message={state.error} />
+        <FormError message={uploadError ?? state.error} />
         <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
           <input type="file" name="datei" required className={inputClass} />
           <select name="kategorie" defaultValue="sonstiges" className={inputClass}>
@@ -130,8 +170,12 @@ export function DokumenteSection({
           placeholder="Beschreibung (optional)"
           className={inputClass}
         />
-        <button type="submit" disabled={isPending} className={`${buttonClass} self-start`}>
-          {isPending ? "Lädt hoch …" : "Hochladen"}
+        <button
+          type="submit"
+          disabled={isUploading || isPending}
+          className={`${buttonClass} self-start`}
+        >
+          {isUploading ? "Lädt hoch …" : isPending ? "Speichert …" : "Hochladen"}
         </button>
       </form>
     </section>
