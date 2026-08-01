@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Einheit, VertragArt } from "@/lib/types";
 import { formatDate, vertragArtLabel } from "@/lib/labels";
-import { buttonClass, secondaryButtonClass } from "@/components/form";
+import { buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
 import { deleteEinheit } from "../actions";
 
@@ -53,7 +53,9 @@ export default async function EinheitDetailPage({
               {objekt.name}
             </Link>
           </p>
-          <h1 className="text-xl font-semibold">{(einheit as Einheit).bezeichnung}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {(einheit as Einheit).bezeichnung}
+          </h1>
         </div>
         <div className="flex gap-3">
           <Link href={`/einheiten/${id}/bearbeiten`} className={secondaryButtonClass}>
@@ -66,14 +68,14 @@ export default async function EinheitDetailPage({
         </div>
       </div>
 
-      <dl className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm">
+      <dl className={`grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm ${cardClass}`}>
         <dt className="text-foreground/60">Fläche</dt>
         <dd>{(einheit as Einheit).flaeche_qm ? `${(einheit as Einheit).flaeche_qm} m²` : "–"}</dd>
       </dl>
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Verträge</h2>
+          <h2 className="text-lg font-semibold tracking-tight">Verträge</h2>
           <Link href={`/vertraege/neu?einheit_id=${id}`} className={buttonClass}>
             Neuer Vertrag
           </Link>
@@ -82,12 +84,18 @@ export default async function EinheitDetailPage({
         {typedVertraege.length === 0 ? (
           <p className="text-sm text-foreground/60">Noch keine Verträge für diese Einheit.</p>
         ) : (
-          <ul className="divide-y divide-black/5 dark:divide-white/5">
+          <ul className={`divide-y divide-border ${cardClass} !p-0`}>
             {typedVertraege.map((vertrag) => {
               const partner = Array.isArray(vertrag.partner) ? vertrag.partner[0] : vertrag.partner;
               return (
-                <li key={vertrag.id} className="flex items-center justify-between py-2 text-sm">
-                  <Link href={`/vertraege/${vertrag.id}`} className="font-medium hover:underline">
+                <li
+                  key={vertrag.id}
+                  className="flex items-center justify-between px-4 py-3 text-sm transition-colors hover:bg-accent-soft/40"
+                >
+                  <Link
+                    href={`/vertraege/${vertrag.id}`}
+                    className="font-medium text-accent hover:underline"
+                  >
                     {vertragArtLabel[vertrag.art]} {partner ? `· ${partner.name}` : ""}
                   </Link>
                   <span className="text-foreground/60">

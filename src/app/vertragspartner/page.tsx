@@ -2,7 +2,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { Vertragspartner } from "@/lib/types";
 import { partnerTypLabel } from "@/lib/labels";
-import { buttonClass } from "@/components/form";
+import {
+  badgeClass,
+  buttonClass,
+  tableClass,
+  tableWrapClass,
+  tdClass,
+  thClass,
+  theadRowClass,
+  trClass,
+} from "@/components/form";
 
 export default async function VertragspartnerPage() {
   const supabase = await createClient();
@@ -18,7 +27,7 @@ export default async function VertragspartnerPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Vertragspartner</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Vertragspartner</h1>
         <Link href="/vertragspartner/neu" className={buttonClass}>
           Neuer Vertragspartner
         </Link>
@@ -27,27 +36,32 @@ export default async function VertragspartnerPage() {
       {partner.length === 0 ? (
         <p className="text-sm text-foreground/60">Noch keine Vertragspartner angelegt.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className={tableWrapClass}>
+          <table className={tableClass}>
             <thead>
-              <tr className="border-b border-black/10 text-foreground/60 dark:border-white/10">
-                <th className="py-2 pr-4">Name</th>
-                <th className="py-2 pr-4">Typ</th>
-                <th className="py-2 pr-4">E-Mail</th>
-                <th className="py-2 pr-4">Telefon</th>
+              <tr className={theadRowClass}>
+                <th className={thClass}>Name</th>
+                <th className={thClass}>Typ</th>
+                <th className={thClass}>E-Mail</th>
+                <th className={thClass}>Telefon</th>
               </tr>
             </thead>
             <tbody>
               {partner.map((p) => (
-                <tr key={p.id} className="border-b border-black/5 dark:border-white/5">
-                  <td className="py-2 pr-4">
-                    <Link href={`/vertragspartner/${p.id}`} className="font-medium hover:underline">
+                <tr key={p.id} className={trClass}>
+                  <td className={tdClass}>
+                    <Link
+                      href={`/vertragspartner/${p.id}`}
+                      className="font-medium text-accent hover:underline"
+                    >
                       {p.name}
                     </Link>
                   </td>
-                  <td className="py-2 pr-4">{partnerTypLabel[p.typ]}</td>
-                  <td className="py-2 pr-4">{p.email ?? "–"}</td>
-                  <td className="py-2 pr-4">{p.telefon ?? "–"}</td>
+                  <td className={tdClass}>
+                    <span className={badgeClass("neutral")}>{partnerTypLabel[p.typ]}</span>
+                  </td>
+                  <td className={tdClass}>{p.email ?? "–"}</td>
+                  <td className={tdClass}>{p.telefon ?? "–"}</td>
                 </tr>
               ))}
             </tbody>

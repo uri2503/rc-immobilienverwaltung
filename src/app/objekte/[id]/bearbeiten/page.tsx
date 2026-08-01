@@ -22,7 +22,7 @@ export default async function ObjektBearbeitenPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Objekt bearbeiten</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Objekt bearbeiten</h1>
       <ObjektForm
         objekt={objekt as Objekt}
         action={updateObjekt.bind(null, id)}

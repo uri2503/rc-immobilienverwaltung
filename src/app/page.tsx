@@ -12,17 +12,17 @@ export default async function Home() {
   ]);
 
   const cards = [
-    { href: "/objekte", label: "Objekte", count: objekte.count ?? 0 },
-    { href: "/objekte", label: "Einheiten", count: einheiten.count ?? 0 },
-    { href: "/vertragspartner", label: "Vertragspartner", count: partner.count ?? 0 },
-    { href: "/vertraege", label: "Verträge", count: vertraege.count ?? 0 },
+    { href: "/objekte", label: "Objekte", count: objekte.count ?? 0, icon: "🏢" },
+    { href: "/objekte", label: "Einheiten", count: einheiten.count ?? 0, icon: "🚪" },
+    { href: "/vertragspartner", label: "Vertragspartner", count: partner.count ?? 0, icon: "👥" },
+    { href: "/vertraege", label: "Verträge", count: vertraege.count ?? 0, icon: "📄" },
   ];
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-xl font-semibold">Übersicht</h1>
-        <p className="text-sm text-foreground/60">
+        <h1 className="text-2xl font-semibold tracking-tight">Übersicht</h1>
+        <p className="mt-1 text-sm text-foreground/60">
           Stammdaten und Mietverhältnisse für das Immobilienportfolio.
         </p>
       </div>
@@ -32,9 +32,12 @@ export default async function Home() {
           <Link
             key={card.label}
             href={card.href}
-            className="rounded-lg border border-black/10 p-4 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/5"
+            className="group rounded-xl border border-border bg-surface p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
           >
-            <div className="text-2xl font-semibold">{card.count}</div>
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent-soft text-lg">
+              {card.icon}
+            </div>
+            <div className="mt-3 text-2xl font-semibold tracking-tight">{card.count}</div>
             <div className="text-sm text-foreground/60">{card.label}</div>
           </Link>
         ))}

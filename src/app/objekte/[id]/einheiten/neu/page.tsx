@@ -22,7 +22,7 @@ export default async function NeueEinheitPage({
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="text-xl font-semibold">Neue Einheit</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Neue Einheit</h1>
         <p className="text-sm text-foreground/60">für {objekt.name}</p>
       </div>
       <EinheitForm

@@ -8,7 +8,7 @@ import {
   vertragArtLabel,
   zahlungsintervallLabel,
 } from "@/lib/labels";
-import { secondaryButtonClass } from "@/components/form";
+import { badgeClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
 import { deleteVertrag } from "../actions";
 
@@ -40,8 +40,10 @@ export default async function VertragDetailPage({
     <div className="flex flex-col gap-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{vertragArtLabel[vertrag.art]}</h1>
-          <p className="text-sm text-foreground/60">
+          <div className="mb-2">
+            <span className={badgeClass("accent")}>{vertragArtLabel[vertrag.art]}</span>
+          </div>
+          <h1 className="text-2xl font-semibold tracking-tight">
             <Link href={`/objekte/${vertrag.einheit.objekt.id}`} className="hover:underline">
               {vertrag.einheit.objekt.name}
             </Link>{" "}
@@ -49,7 +51,7 @@ export default async function VertragDetailPage({
             <Link href={`/einheiten/${vertrag.einheit.id}`} className="hover:underline">
               {vertrag.einheit.bezeichnung}
             </Link>
-          </p>
+          </h1>
         </div>
         <div className="flex gap-3">
           <Link href={`/vertraege/${vertrag.id}/bearbeiten`} className={secondaryButtonClass}>
@@ -62,7 +64,7 @@ export default async function VertragDetailPage({
         </div>
       </div>
 
-      <dl className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm">
+      <dl className={`grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm ${cardClass}`}>
         <dt className="text-foreground/60">Vertragspartner</dt>
         <dd>
           {vertrag.partner ? (

@@ -38,7 +38,7 @@ export default async function VertragBearbeitenPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Vertrag bearbeiten</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Vertrag bearbeiten</h1>
       <VertragForm
         vertrag={vertrag as Vertrag}
         einheiten={einheitOptions}

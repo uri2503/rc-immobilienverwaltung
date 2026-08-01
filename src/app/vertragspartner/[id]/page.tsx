@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { VertragArt, Vertragspartner } from "@/lib/types";
 import { partnerTypLabel, vertragArtLabel } from "@/lib/labels";
-import { buttonClass, secondaryButtonClass } from "@/components/form";
+import { badgeClass, buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
 import { deleteVertragspartner } from "../actions";
 
@@ -46,8 +46,10 @@ export default async function VertragspartnerDetailPage({
     <div className="flex flex-col gap-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-semibold">{typedPartner.name}</h1>
-          <p className="text-sm text-foreground/60">{partnerTypLabel[typedPartner.typ]}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{typedPartner.name}</h1>
+          <div className="mt-2">
+            <span className={badgeClass("neutral")}>{partnerTypLabel[typedPartner.typ]}</span>
+          </div>
         </div>
         <div className="flex gap-3">
           <Link href={`/vertragspartner/${typedPartner.id}/bearbeiten`} className={secondaryButtonClass}>
@@ -60,7 +62,7 @@ export default async function VertragspartnerDetailPage({
         </div>
       </div>
 
-      <dl className="grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm">
+      <dl className={`grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm ${cardClass}`}>
         <dt className="text-foreground/60">E-Mail</dt>
         <dd>{typedPartner.email ?? "–"}</dd>
         <dt className="text-foreground/60">Telefon</dt>
@@ -70,11 +72,11 @@ export default async function VertragspartnerDetailPage({
       </dl>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Verträge</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Verträge</h2>
         {typedVertraege.length === 0 ? (
           <p className="text-sm text-foreground/60">Keine Verträge mit diesem Partner.</p>
         ) : (
-          <ul className="divide-y divide-black/5 dark:divide-white/5">
+          <ul className={`divide-y divide-border ${cardClass} !p-0`}>
             {typedVertraege.map((vertrag) => {
               const einheit = Array.isArray(vertrag.einheit) ? vertrag.einheit[0] : vertrag.einheit;
               const objekt = einheit
@@ -83,8 +85,14 @@ export default async function VertragspartnerDetailPage({
                   : einheit.objekt
                 : null;
               return (
-                <li key={vertrag.id} className="flex items-center justify-between py-2 text-sm">
-                  <Link href={`/vertraege/${vertrag.id}`} className="font-medium hover:underline">
+                <li
+                  key={vertrag.id}
+                  className="flex items-center justify-between px-4 py-3 text-sm transition-colors hover:bg-accent-soft/40"
+                >
+                  <Link
+                    href={`/vertraege/${vertrag.id}`}
+                    className="font-medium text-accent hover:underline"
+                  >
                     {vertragArtLabel[vertrag.art]} · {objekt?.name} / {einheit?.bezeichnung}
                   </Link>
                   <span className="text-foreground/60">seit {vertrag.beginn}</span>

@@ -24,7 +24,7 @@ export default async function EinheitBearbeitenPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Einheit bearbeiten</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Einheit bearbeiten</h1>
       <EinheitForm
         einheit={typedEinheit}
         cancelHref={`/einheiten/${id}`}

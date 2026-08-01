@@ -2,7 +2,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import type { VertragArt } from "@/lib/types";
 import { vertragArtLabel, formatCurrency, formatDate } from "@/lib/labels";
-import { buttonClass } from "@/components/form";
+import {
+  badgeClass,
+  buttonClass,
+  tableClass,
+  tableWrapClass,
+  tdClass,
+  thClass,
+  theadRowClass,
+  trClass,
+} from "@/components/form";
 
 interface VertragRow {
   id: string;
@@ -30,7 +39,7 @@ export default async function VertraegePage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Verträge</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">Verträge</h1>
         <Link href="/vertraege/neu" className={buttonClass}>
           Neuer Vertrag
         </Link>
@@ -39,16 +48,16 @@ export default async function VertraegePage() {
       {vertraege.length === 0 ? (
         <p className="text-sm text-foreground/60">Noch keine Verträge angelegt.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+        <div className={tableWrapClass}>
+          <table className={tableClass}>
             <thead>
-              <tr className="border-b border-black/10 text-foreground/60 dark:border-white/10">
-                <th className="py-2 pr-4">Objekt / Einheit</th>
-                <th className="py-2 pr-4">Partner</th>
-                <th className="py-2 pr-4">Art</th>
-                <th className="py-2 pr-4">Beginn</th>
-                <th className="py-2 pr-4">Ende</th>
-                <th className="py-2 pr-4">Betrag</th>
+              <tr className={theadRowClass}>
+                <th className={thClass}>Objekt / Einheit</th>
+                <th className={thClass}>Partner</th>
+                <th className={thClass}>Art</th>
+                <th className={thClass}>Beginn</th>
+                <th className={thClass}>Ende</th>
+                <th className={thClass}>Betrag</th>
               </tr>
             </thead>
             <tbody>
@@ -66,17 +75,24 @@ export default async function VertraegePage() {
                   : vertrag.partner;
 
                 return (
-                  <tr key={vertrag.id} className="border-b border-black/5 dark:border-white/5">
-                    <td className="py-2 pr-4">
-                      <Link href={`/vertraege/${vertrag.id}`} className="font-medium hover:underline">
+                  <tr key={vertrag.id} className={trClass}>
+                    <td className={tdClass}>
+                      <Link
+                        href={`/vertraege/${vertrag.id}`}
+                        className="font-medium text-accent hover:underline"
+                      >
                         {objekt?.name} / {einheit?.bezeichnung}
                       </Link>
                     </td>
-                    <td className="py-2 pr-4">{partner?.name ?? "–"}</td>
-                    <td className="py-2 pr-4">{vertragArtLabel[vertrag.art]}</td>
-                    <td className="py-2 pr-4">{formatDate(vertrag.beginn)}</td>
-                    <td className="py-2 pr-4">{formatDate(vertrag.ende)}</td>
-                    <td className="py-2 pr-4">{formatCurrency(vertrag.betrag)}</td>
+                    <td className={tdClass}>{partner?.name ?? "–"}</td>
+                    <td className={tdClass}>
+                      <span className={badgeClass("accent")}>
+                        {vertragArtLabel[vertrag.art]}
+                      </span>
+                    </td>
+                    <td className={tdClass}>{formatDate(vertrag.beginn)}</td>
+                    <td className={tdClass}>{formatDate(vertrag.ende)}</td>
+                    <td className={tdClass}>{formatCurrency(vertrag.betrag)}</td>
                   </tr>
                 );
               })}

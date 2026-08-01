@@ -22,7 +22,7 @@ export default async function VertragspartnerBearbeitenPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-xl font-semibold">Vertragspartner bearbeiten</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Vertragspartner bearbeiten</h1>
       <PartnerForm
         partner={partner as Vertragspartner}
         action={updateVertragspartner.bind(null, id)}
