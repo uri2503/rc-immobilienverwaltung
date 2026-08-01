@@ -13,13 +13,21 @@ export interface KostenpositionCashflowInput {
   betrag: number;
 }
 
+export interface FinanzierungCashflowInput {
+  zinsenGesamt: number;
+  tilgungGesamt: number;
+}
+
 export interface CashflowErgebnis {
   jahr: number;
   einnahmenKaltmiete: number;
   einnahmenNebenkosten: number;
   einnahmenGesamt: number;
-  kostenGesamt: number;
-  cashflow: number;
+  betriebskostenGesamt: number;
+  zinsenGesamt: number;
+  tilgungGesamt: number;
+  ergebnisVorTilgung: number;
+  cashflowNachTilgung: number;
 }
 
 const JAHRESFAKTOR: Record<Zahlungsintervall, number> = {
@@ -33,13 +41,18 @@ const JAHRESFAKTOR: Record<Zahlungsintervall, number> = {
 /**
  * Soll-basierter Cashflow: vertraglich vereinbarte Kaltmiete +
  * Nebenkosten-Vorauszahlungen (anteilig für im Jahr aktive Monate)
- * abzüglich aller erfassten Kostenpositionen (umlagefähig + nicht).
+ * abzüglich Betriebskosten und Finanzierungskosten (Zinsen + Tilgung).
  * Keine tatsächlichen Zahlungseingänge, da diese aktuell nicht erfasst werden.
+ *
+ * Zwei Ergebniszeilen, weil beide Fragen unterschiedlich sind:
+ * - ergebnisVorTilgung: wirtschaftlicher Ertrag (Einnahmen − Betriebskosten − Zinsen)
+ * - cashflowNachTilgung: was nach der Kreditrate tatsächlich übrig bleibt
  */
 export function berechneCashflow(
   jahr: number,
   vertraege: VertragCashflowInput[],
   kostenpositionen: KostenpositionCashflowInput[],
+  finanzierung: FinanzierungCashflowInput = { zinsenGesamt: 0, tilgungGesamt: 0 },
 ): CashflowErgebnis {
   let einnahmenKaltmiete = 0;
   let einnahmenNebenkosten = 0;
@@ -61,16 +74,21 @@ export function berechneCashflow(
     }
   }
 
-  const kostenGesamt = kostenpositionen.reduce((sum, k) => sum + k.betrag, 0);
+  const betriebskostenGesamt = kostenpositionen.reduce((sum, k) => sum + k.betrag, 0);
   const einnahmenGesamt = einnahmenKaltmiete + einnahmenNebenkosten;
+  const ergebnisVorTilgung = einnahmenGesamt - betriebskostenGesamt - finanzierung.zinsenGesamt;
+  const cashflowNachTilgung = ergebnisVorTilgung - finanzierung.tilgungGesamt;
 
   return {
     jahr,
     einnahmenKaltmiete: Math.round(einnahmenKaltmiete * 100) / 100,
     einnahmenNebenkosten: Math.round(einnahmenNebenkosten * 100) / 100,
     einnahmenGesamt: Math.round(einnahmenGesamt * 100) / 100,
-    kostenGesamt: Math.round(kostenGesamt * 100) / 100,
-    cashflow: Math.round((einnahmenGesamt - kostenGesamt) * 100) / 100,
+    betriebskostenGesamt: Math.round(betriebskostenGesamt * 100) / 100,
+    zinsenGesamt: Math.round(finanzierung.zinsenGesamt * 100) / 100,
+    tilgungGesamt: Math.round(finanzierung.tilgungGesamt * 100) / 100,
+    ergebnisVorTilgung: Math.round(ergebnisVorTilgung * 100) / 100,
+    cashflowNachTilgung: Math.round(cashflowNachTilgung * 100) / 100,
   };
 }
 
@@ -81,4 +99,13 @@ export function berechneBruttomietrendite(
 ): number | null {
   if (!bezugswert || bezugswert <= 0) return null;
   return jahresKaltmiete / bezugswert;
+}
+
+/** Eigenkapitalrendite (Cash-on-Cash) = Cashflow nach Tilgung / eingesetztes Eigenkapital. */
+export function berechneEigenkapitalrendite(
+  cashflowNachTilgung: number,
+  eigenkapital: number | null,
+): number | null {
+  if (!eigenkapital || eigenkapital <= 0) return null;
+  return cashflowNachTilgung / eigenkapital;
 }

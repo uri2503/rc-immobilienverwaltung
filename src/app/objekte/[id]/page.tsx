@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Dokument, Einheit, Objekt } from "@/lib/types";
+import type { Darlehen, Dokument, Einheit, Objekt } from "@/lib/types";
 import {
   formatCurrency,
   formatDate,
@@ -12,7 +12,12 @@ import {
 import { badgeClass, buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
 import { DokumenteSection } from "@/components/dokumente-section";
-import { berechneBruttomietrendite, berechneCashflow } from "@/lib/cashflow";
+import {
+  berechneBruttomietrendite,
+  berechneCashflow,
+  berechneEigenkapitalrendite,
+} from "@/lib/cashflow";
+import { berechneAnnuitaetJahr, restschuldAmStichtag } from "@/lib/darlehen";
 import { deleteObjekt } from "../actions";
 
 export default async function ObjektDetailPage({
@@ -49,24 +54,47 @@ export default async function ObjektDetailPage({
   const einheitIds = typedEinheiten.map((e) => e.id);
   const jahr = new Date().getFullYear();
 
-  const [{ data: vertraege, error: vertraegeError }, { data: kostenpositionen, error: kpError }] =
-    await Promise.all([
-      einheitIds.length > 0
-        ? supabase
-            .from("immo_vertrag")
-            .select("beginn, ende, betrag, zahlungsintervall, nebenkosten_vorauszahlung")
-            .in("einheit_id", einheitIds)
-        : Promise.resolve({ data: [], error: null }),
-      supabase.from("immo_kostenposition").select("betrag").eq("objekt_id", id).eq("jahr", jahr),
-    ]);
+  const [
+    { data: vertraege, error: vertraegeError },
+    { data: kostenpositionen, error: kpError },
+    { data: darlehen, error: darlehenError },
+  ] = await Promise.all([
+    einheitIds.length > 0
+      ? supabase
+          .from("immo_vertrag")
+          .select("beginn, ende, betrag, zahlungsintervall, nebenkosten_vorauszahlung")
+          .in("einheit_id", einheitIds)
+      : Promise.resolve({ data: [], error: null }),
+    supabase.from("immo_kostenposition").select("betrag").eq("objekt_id", id).eq("jahr", jahr),
+    supabase.from("immo_darlehen").select("*").eq("objekt_id", id),
+  ]);
 
   if (vertraegeError) throw new Error(vertraegeError.message);
   if (kpError) throw new Error(kpError.message);
+  if (darlehenError) throw new Error(darlehenError.message);
 
-  const cashflow = berechneCashflow(jahr, vertraege ?? [], kostenpositionen ?? []);
-  const rendite = berechneBruttomietrendite(
+  const typedDarlehen = (darlehen ?? []) as Darlehen[];
+  const annuitaeten = typedDarlehen.map((d) => berechneAnnuitaetJahr(d, jahr));
+  const zinsenGesamt = annuitaeten.reduce((sum, a) => sum + a.zinsanteil, 0);
+  const tilgungGesamt = annuitaeten.reduce((sum, a) => sum + a.tilgungsanteil, 0);
+  const restschuldGesamt = typedDarlehen.reduce(
+    (sum, d) => sum + restschuldAmStichtag(d, new Date()),
+    0,
+  );
+  const darlehenssummeGesamt = typedDarlehen.reduce((sum, d) => sum + d.darlehenssumme, 0);
+
+  const cashflow = berechneCashflow(jahr, vertraege ?? [], kostenpositionen ?? [], {
+    zinsenGesamt,
+    tilgungGesamt,
+  });
+  const bruttomietrendite = berechneBruttomietrendite(
     cashflow.einnahmenKaltmiete,
     typedObjekt.kaufpreis ?? typedObjekt.verkehrswert,
+  );
+  const eigenkapital = typedObjekt.kaufpreis ? typedObjekt.kaufpreis - darlehenssummeGesamt : null;
+  const eigenkapitalrendite = berechneEigenkapitalrendite(
+    cashflow.cashflowNachTilgung,
+    eigenkapital,
   );
 
   return (
@@ -108,7 +136,11 @@ export default async function ObjektDetailPage({
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">Kennzahlen {jahr}</h2>
         <p className="text-xs text-foreground/60">
-          Soll-basiert (vertraglich vereinbart, keine erfassten Zahlungseingänge).
+          Soll-basiert (vertraglich vereinbart, keine erfassten Zahlungseingänge). Berücksichtigt{" "}
+          {typedDarlehen.length > 0
+            ? `${typedDarlehen.length} hinterlegte${typedDarlehen.length === 1 ? "s" : ""} Darlehen`
+            : "kein hinterlegtes Darlehen — Immobilie wird als schuldenfrei gerechnet"}
+          .
         </p>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className={cardClass}>
@@ -118,26 +150,73 @@ export default async function ObjektDetailPage({
             </div>
           </div>
           <div className={cardClass}>
-            <div className="text-xs text-foreground/60">Kosten</div>
+            <div className="text-xs text-foreground/60">Betriebskosten</div>
             <div className="mt-1 text-xl font-semibold tracking-tight">
-              {formatCurrency(cashflow.kostenGesamt)}
+              {formatCurrency(cashflow.betriebskostenGesamt)}
             </div>
           </div>
           <div className={cardClass}>
-            <div className="text-xs text-foreground/60">Cashflow</div>
+            <div className="text-xs text-foreground/60">Zinsen</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatCurrency(cashflow.zinsenGesamt)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Tilgung</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatCurrency(cashflow.tilgungGesamt)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Ergebnis vor Tilgung</div>
             <div
-              className={`mt-1 text-xl font-semibold tracking-tight ${cashflow.cashflow < 0 ? "text-red-600" : "text-emerald-600"}`}
+              className={`mt-1 text-xl font-semibold tracking-tight ${cashflow.ergebnisVorTilgung < 0 ? "text-red-600" : "text-emerald-600"}`}
             >
-              {formatCurrency(cashflow.cashflow)}
+              {formatCurrency(cashflow.ergebnisVorTilgung)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Cashflow nach Tilgung</div>
+            <div
+              className={`mt-1 text-xl font-semibold tracking-tight ${cashflow.cashflowNachTilgung < 0 ? "text-red-600" : "text-emerald-600"}`}
+            >
+              {formatCurrency(cashflow.cashflowNachTilgung)}
             </div>
           </div>
           <div className={cardClass}>
             <div className="text-xs text-foreground/60">Bruttomietrendite</div>
             <div className="mt-1 text-xl font-semibold tracking-tight">
-              {formatPercent(rendite)}
+              {formatPercent(bruttomietrendite)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Eigenkapitalrendite</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatPercent(eigenkapitalrendite)}
             </div>
           </div>
         </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Finanzierung</h2>
+          <Link href={`/objekte/${typedObjekt.id}/darlehen`} className={buttonClass}>
+            Darlehen verwalten
+          </Link>
+        </div>
+        {typedDarlehen.length === 0 ? (
+          <p className="text-sm text-foreground/60">
+            Kein Darlehen hinterlegt — Kennzahlen gehen von einer schuldenfreien Immobilie aus.
+          </p>
+        ) : (
+          <p className="text-sm text-foreground/60">
+            {typedDarlehen.length} Darlehen · Restschuld gesamt (heute):{" "}
+            <span className="font-medium text-foreground">
+              {formatCurrency(restschuldGesamt)}
+            </span>
+          </p>
+        )}
       </section>
 
       <section className="flex flex-col gap-4">

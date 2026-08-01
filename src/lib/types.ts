@@ -210,6 +210,19 @@ export interface Kostenposition {
   updated_at: string;
 }
 
+export interface Darlehen {
+  id: string;
+  objekt_id: string;
+  bezeichnung: string | null;
+  darlehenssumme: number;
+  zinssatz_prozent: number;
+  anfaenglicher_tilgungssatz_prozent: number;
+  beginn: string;
+  zinsbindung_bis: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Abrechnung {
   id: string;
   vertrag_id: string;
