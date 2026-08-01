@@ -54,7 +54,12 @@ export default async function NebenkostenPage({
   jahre.sort((a, b) => b - a);
 
   const positionen = alleTyped.filter((k) => k.jahr === jahr);
-  const summe = positionen.reduce((sum, k) => sum + k.betrag, 0);
+  const summeUmlagefaehig = positionen
+    .filter((k) => k.umlagefaehig)
+    .reduce((sum, k) => sum + k.betrag, 0);
+  const summeNichtUmlagefaehig = positionen
+    .filter((k) => !k.umlagefaehig)
+    .reduce((sum, k) => sum + k.betrag, 0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -101,6 +106,7 @@ export default async function NebenkostenPage({
                 <th className={thClass}>Kategorie</th>
                 <th className={thClass}>Bezeichnung</th>
                 <th className={thClass}>Verteilerschlüssel</th>
+                <th className={thClass}>Umlagefähig</th>
                 <th className={thClass}>Betrag</th>
                 <th className={thClass} />
               </tr>
@@ -113,6 +119,11 @@ export default async function NebenkostenPage({
                   </td>
                   <td className={tdClass}>{k.bezeichnung ?? "–"}</td>
                   <td className={tdClass}>{verteilerschluesselLabel[k.verteilerschluessel]}</td>
+                  <td className={tdClass}>
+                    <span className={badgeClass(k.umlagefaehig ? "positive" : "neutral")}>
+                      {k.umlagefaehig ? "Ja" : "Nein"}
+                    </span>
+                  </td>
                   <td className={tdClass}>{formatCurrency(k.betrag)}</td>
                   <td className={`${tdClass} text-right`}>
                     <div className="flex justify-end gap-3">
@@ -135,9 +146,12 @@ export default async function NebenkostenPage({
             <tfoot>
               <tr>
                 <td className={tdClass} colSpan={3}>
-                  <span className="font-medium">Summe</span>
+                  <span className="font-medium">Summe umlagefähig / nicht umlagefähig</span>
                 </td>
-                <td className={`${tdClass} font-medium`}>{formatCurrency(summe)}</td>
+                <td className={tdClass} />
+                <td className={`${tdClass} font-medium`}>
+                  {formatCurrency(summeUmlagefaehig)} / {formatCurrency(summeNichtUmlagefaehig)}
+                </td>
                 <td className={tdClass} />
               </tr>
             </tfoot>

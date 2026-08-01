@@ -48,6 +48,8 @@ export type Kostenkategorie =
   | "gartenpflege"
   | "aufzug"
   | "verwaltung"
+  | "kreditzinsen"
+  | "instandhaltung"
   | "sonstiges";
 
 export type Verteilerschluessel = "flaeche" | "einheiten" | "personen";
@@ -109,6 +111,8 @@ export const KOSTENKATEGORIEN: Kostenkategorie[] = [
   "gartenpflege",
   "aufzug",
   "verwaltung",
+  "kreditzinsen",
+  "instandhaltung",
   "sonstiges",
 ];
 
@@ -201,6 +205,7 @@ export interface Kostenposition {
   bezeichnung: string | null;
   betrag: number;
   verteilerschluessel: Verteilerschluessel;
+  umlagefaehig: boolean;
   created_at: string;
   updated_at: string;
 }

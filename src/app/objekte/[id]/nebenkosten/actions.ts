@@ -24,6 +24,7 @@ function kostenpositionPayload(formData: FormData) {
     bezeichnung: toStringOrNull(formData.get("bezeichnung")),
     betrag: toNumberOrNull(formData.get("betrag")) ?? 0,
     verteilerschluessel: String(formData.get("verteilerschluessel")) as Verteilerschluessel,
+    umlagefaehig: formData.get("umlagefaehig") === "on",
   };
 }
 
@@ -103,7 +104,8 @@ export async function berechneUndSpeichereAbrechnung(
         .from("immo_kostenposition")
         .select("id, betrag, verteilerschluessel")
         .eq("objekt_id", objektId)
-        .eq("jahr", jahr),
+        .eq("jahr", jahr)
+        .eq("umlagefaehig", true),
     ]);
 
   if (vertraegeError) return { error: vertraegeError.message };

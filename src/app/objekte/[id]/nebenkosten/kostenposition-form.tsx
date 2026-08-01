@@ -97,6 +97,24 @@ export function KostenpositionForm({
         </Field>
       </div>
 
+      <div className="flex items-center gap-2">
+        <input
+          id="umlagefaehig"
+          name="umlagefaehig"
+          type="checkbox"
+          defaultChecked={kostenposition?.umlagefaehig ?? true}
+          className="h-4 w-4"
+        />
+        <label htmlFor="umlagefaehig" className="text-sm">
+          Umlagefähig auf Mieter (fließt in die Nebenkostenabrechnung ein)
+        </label>
+      </div>
+      <p className="-mt-2 text-xs text-foreground/60">
+        Nicht umlagefähig z. B. bei Kreditzinsen, größerer Instandhaltung oder Verwaltung —
+        diese Positionen zählen nur im Cashflow-Bericht mit, nicht in der Abrechnung an
+        Mieter:innen.
+      </p>
+
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending} className={buttonClass}>
           {isPending ? "Speichert …" : "Speichern"}

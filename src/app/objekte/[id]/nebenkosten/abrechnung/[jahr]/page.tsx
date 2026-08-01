@@ -59,7 +59,8 @@ export default async function AbrechnungPage({
         .from("immo_kostenposition")
         .select("id, betrag, verteilerschluessel")
         .eq("objekt_id", id)
-        .eq("jahr", jahr),
+        .eq("jahr", jahr)
+        .eq("umlagefaehig", true),
     ]);
 
   if (vertraegeError) throw new Error(vertraegeError.message);
@@ -126,7 +127,8 @@ export default async function AbrechnungPage({
 
       {kostenpositionen?.length === 0 && (
         <p className="text-sm text-foreground/60">
-          Für {jahr} sind noch keine Kostenpositionen erfasst.
+          Für {jahr} sind keine umlagefähigen Kostenpositionen erfasst (nicht umlagefähige
+          Positionen fließen hier bewusst nicht ein — die zählen im Cashflow-Bericht).
         </p>
       )}
 

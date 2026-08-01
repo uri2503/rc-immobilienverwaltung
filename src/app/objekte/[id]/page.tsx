@@ -2,10 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Dokument, Einheit, Objekt } from "@/lib/types";
-import { formatCurrency, formatDate, objektStatusLabel, objektTypLabel } from "@/lib/labels";
+import {
+  formatCurrency,
+  formatDate,
+  formatPercent,
+  objektStatusLabel,
+  objektTypLabel,
+} from "@/lib/labels";
 import { badgeClass, buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
 import { DokumenteSection } from "@/components/dokumente-section";
+import { berechneBruttomietrendite, berechneCashflow } from "@/lib/cashflow";
 import { deleteObjekt } from "../actions";
 
 export default async function ObjektDetailPage({
@@ -38,6 +45,29 @@ export default async function ObjektDetailPage({
   const typedObjekt = objekt as Objekt;
   const typedEinheiten = (einheiten ?? []) as Einheit[];
   const typedDokumente = (dokumente ?? []) as Dokument[];
+
+  const einheitIds = typedEinheiten.map((e) => e.id);
+  const jahr = new Date().getFullYear();
+
+  const [{ data: vertraege, error: vertraegeError }, { data: kostenpositionen, error: kpError }] =
+    await Promise.all([
+      einheitIds.length > 0
+        ? supabase
+            .from("immo_vertrag")
+            .select("beginn, ende, betrag, zahlungsintervall, nebenkosten_vorauszahlung")
+            .in("einheit_id", einheitIds)
+        : Promise.resolve({ data: [], error: null }),
+      supabase.from("immo_kostenposition").select("betrag").eq("objekt_id", id).eq("jahr", jahr),
+    ]);
+
+  if (vertraegeError) throw new Error(vertraegeError.message);
+  if (kpError) throw new Error(kpError.message);
+
+  const cashflow = berechneCashflow(jahr, vertraege ?? [], kostenpositionen ?? []);
+  const rendite = berechneBruttomietrendite(
+    cashflow.einnahmenKaltmiete,
+    typedObjekt.kaufpreis ?? typedObjekt.verkehrswert,
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -74,6 +104,41 @@ export default async function ObjektDetailPage({
         <dt className="text-foreground/60">Verwalter/Hausmeister</dt>
         <dd>{typedObjekt.verwalter_kontakt ?? "–"}</dd>
       </dl>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold tracking-tight">Kennzahlen {jahr}</h2>
+        <p className="text-xs text-foreground/60">
+          Soll-basiert (vertraglich vereinbart, keine erfassten Zahlungseingänge).
+        </p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Einnahmen (Soll)</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatCurrency(cashflow.einnahmenGesamt)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Kosten</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatCurrency(cashflow.kostenGesamt)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Cashflow</div>
+            <div
+              className={`mt-1 text-xl font-semibold tracking-tight ${cashflow.cashflow < 0 ? "text-red-600" : "text-emerald-600"}`}
+            >
+              {formatCurrency(cashflow.cashflow)}
+            </div>
+          </div>
+          <div className={cardClass}>
+            <div className="text-xs text-foreground/60">Bruttomietrendite</div>
+            <div className="mt-1 text-xl font-semibold tracking-tight">
+              {formatPercent(rendite)}
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">

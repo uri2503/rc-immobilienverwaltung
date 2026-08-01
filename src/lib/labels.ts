@@ -69,6 +69,8 @@ export const kostenkategorieLabel: Record<Kostenkategorie, string> = {
   gartenpflege: "Gartenpflege",
   aufzug: "Aufzug",
   verwaltung: "Verwaltung",
+  kreditzinsen: "Kreditzinsen",
+  instandhaltung: "Instandhaltung",
   sonstiges: "Sonstiges",
 };
 
@@ -89,6 +91,14 @@ export function formatCurrency(value: number | null): string {
   return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
+  }).format(value);
+}
+
+export function formatPercent(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "–";
+  return new Intl.NumberFormat("de-DE", {
+    style: "percent",
+    maximumFractionDigits: 1,
   }).format(value);
 }
 
