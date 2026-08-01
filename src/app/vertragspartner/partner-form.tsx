@@ -79,6 +79,21 @@ export function PartnerForm({
         />
       </Field>
 
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="IBAN" htmlFor="iban">
+          <input
+            id="iban"
+            name="iban"
+            defaultValue={partner?.iban ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="BIC" htmlFor="bic">
+          <input id="bic" name="bic" defaultValue={partner?.bic ?? ""} className={inputClass} />
+        </Field>
+      </div>
+
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending} className={buttonClass}>
           {isPending ? "Speichert …" : "Speichern"}

@@ -29,6 +29,10 @@ function vertragPayload(formData: FormData) {
     ) as Zahlungsintervall | null,
     betrag: toNumberOrNull(formData.get("betrag")),
     konditionen: toStringOrNull(formData.get("konditionen")),
+    kaution: toNumberOrNull(formData.get("kaution")),
+    kuendigungsfrist_monate: toNumberOrNull(formData.get("kuendigungsfrist_monate")),
+    personenzahl: toNumberOrNull(formData.get("personenzahl")),
+    nebenkosten_vorauszahlung: toNumberOrNull(formData.get("nebenkosten_vorauszahlung")),
   };
 }
 

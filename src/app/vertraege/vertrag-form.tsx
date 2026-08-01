@@ -160,6 +160,54 @@ export function VertragForm({
         </Field>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Kaution (€)" htmlFor="kaution">
+          <input
+            id="kaution"
+            name="kaution"
+            type="number"
+            step="0.01"
+            defaultValue={vertrag?.kaution ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Kündigungsfrist (Monate)" htmlFor="kuendigungsfrist_monate">
+          <input
+            id="kuendigungsfrist_monate"
+            name="kuendigungsfrist_monate"
+            type="number"
+            step="1"
+            defaultValue={vertrag?.kuendigungsfrist_monate ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Personenzahl" htmlFor="personenzahl">
+          <input
+            id="personenzahl"
+            name="personenzahl"
+            type="number"
+            step="1"
+            defaultValue={vertrag?.personenzahl ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Nebenkosten-Vorauszahlung (€/Monat)" htmlFor="nebenkosten_vorauszahlung">
+          <input
+            id="nebenkosten_vorauszahlung"
+            name="nebenkosten_vorauszahlung"
+            type="number"
+            step="0.01"
+            defaultValue={vertrag?.nebenkosten_vorauszahlung ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
       <Field label="Konditionen" htmlFor="konditionen">
         <textarea
           id="konditionen"

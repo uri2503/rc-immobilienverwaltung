@@ -10,6 +10,23 @@ function toNumberOrNull(value: FormDataEntryValue | null): number | null {
   return Number(value);
 }
 
+function toStringOrNull(value: FormDataEntryValue | null): string | null {
+  if (!value || value.toString().trim() === "") return null;
+  return value.toString();
+}
+
+function einheitPayload(formData: FormData) {
+  return {
+    bezeichnung: String(formData.get("bezeichnung")),
+    flaeche_qm: toNumberOrNull(formData.get("flaeche_qm")),
+    zimmer: toNumberOrNull(formData.get("zimmer")),
+    etage: toStringOrNull(formData.get("etage")),
+    zaehlernummer_strom: toStringOrNull(formData.get("zaehlernummer_strom")),
+    zaehlernummer_wasser: toStringOrNull(formData.get("zaehlernummer_wasser")),
+    zaehlernummer_gas: toStringOrNull(formData.get("zaehlernummer_gas")),
+  };
+}
+
 export async function createEinheit(
   objektId: string,
   _prevState: ActionState,
@@ -18,8 +35,7 @@ export async function createEinheit(
   const supabase = await createClient();
   const { error } = await supabase.from("immo_einheit").insert({
     objekt_id: objektId,
-    bezeichnung: String(formData.get("bezeichnung")),
-    flaeche_qm: toNumberOrNull(formData.get("flaeche_qm")),
+    ...einheitPayload(formData),
   });
 
   if (error) return { error: error.message };
@@ -37,10 +53,7 @@ export async function updateEinheit(
   const supabase = await createClient();
   const { error } = await supabase
     .from("immo_einheit")
-    .update({
-      bezeichnung: String(formData.get("bezeichnung")),
-      flaeche_qm: toNumberOrNull(formData.get("flaeche_qm")),
-    })
+    .update(einheitPayload(formData))
     .eq("id", id);
 
   if (error) return { error: error.message };

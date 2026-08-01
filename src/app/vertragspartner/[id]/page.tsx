@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { VertragArt, Vertragspartner } from "@/lib/types";
+import type { Dokument, VertragArt, Vertragspartner } from "@/lib/types";
 import { partnerTypLabel, vertragArtLabel } from "@/lib/labels";
 import { badgeClass, buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
+import { DokumenteSection } from "@/components/dokumente-section";
 import { deleteVertragspartner } from "../actions";
 
 interface VertragRow {
@@ -25,22 +26,32 @@ export default async function VertragspartnerDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: partner, error: partnerError }, { data: vertraege, error: vertraegeError }] =
-    await Promise.all([
-      supabase.from("immo_vertragspartner").select("*").eq("id", id).maybeSingle(),
-      supabase
-        .from("immo_vertrag")
-        .select("id, art, beginn, ende, einheit:immo_einheit(id, bezeichnung, objekt:immo_objekt(name))")
-        .eq("partner_id", id)
-        .order("beginn", { ascending: false }),
-    ]);
+  const [
+    { data: partner, error: partnerError },
+    { data: vertraege, error: vertraegeError },
+    { data: dokumente, error: dokumenteError },
+  ] = await Promise.all([
+    supabase.from("immo_vertragspartner").select("*").eq("id", id).maybeSingle(),
+    supabase
+      .from("immo_vertrag")
+      .select("id, art, beginn, ende, einheit:immo_einheit(id, bezeichnung, objekt:immo_objekt(name))")
+      .eq("partner_id", id)
+      .order("beginn", { ascending: false }),
+    supabase
+      .from("immo_dokument")
+      .select("*")
+      .eq("partner_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (partnerError) throw new Error(partnerError.message);
   if (vertraegeError) throw new Error(vertraegeError.message);
+  if (dokumenteError) throw new Error(dokumenteError.message);
   if (!partner) notFound();
 
   const typedPartner = partner as Vertragspartner;
   const typedVertraege = (vertraege ?? []) as VertragRow[];
+  const typedDokumente = (dokumente ?? []) as Dokument[];
 
   return (
     <div className="flex flex-col gap-8">
@@ -69,6 +80,10 @@ export default async function VertragspartnerDetailPage({
         <dd>{typedPartner.telefon ?? "–"}</dd>
         <dt className="text-foreground/60">Adresse</dt>
         <dd>{typedPartner.adresse ?? "–"}</dd>
+        <dt className="text-foreground/60">IBAN</dt>
+        <dd>{typedPartner.iban ?? "–"}</dd>
+        <dt className="text-foreground/60">BIC</dt>
+        <dd>{typedPartner.bic ?? "–"}</dd>
       </dl>
 
       <section className="flex flex-col gap-4">
@@ -105,6 +120,13 @@ export default async function VertragspartnerDetailPage({
           Neuer Vertrag
         </Link>
       </section>
+
+      <DokumenteSection
+        dokumente={typedDokumente}
+        parentField="partner_id"
+        parentId={typedPartner.id}
+        revalidateTargetPath={`/vertragspartner/${typedPartner.id}`}
+      />
     </div>
   );
 }

@@ -110,6 +110,29 @@ export function ObjektForm({
         </Field>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Baujahr" htmlFor="baujahr">
+          <input
+            id="baujahr"
+            name="baujahr"
+            type="number"
+            step="1"
+            defaultValue={objekt?.baujahr ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Verwalter/Hausmeister-Kontakt" htmlFor="verwalter_kontakt">
+          <input
+            id="verwalter_kontakt"
+            name="verwalter_kontakt"
+            placeholder="Name, Telefon, E-Mail"
+            defaultValue={objekt?.verwalter_kontakt ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending} className={buttonClass}>
           {isPending ? "Speichert …" : "Speichern"}

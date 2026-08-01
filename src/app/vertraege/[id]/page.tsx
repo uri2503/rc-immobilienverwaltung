@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Vertrag } from "@/lib/types";
+import type { Dokument, Vertrag } from "@/lib/types";
 import {
   formatCurrency,
   formatDate,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/labels";
 import { badgeClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
+import { DokumenteSection } from "@/components/dokumente-section";
 import { deleteVertrag } from "../actions";
 
 export default async function VertragDetailPage({
@@ -20,21 +21,30 @@ export default async function VertragDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("immo_vertrag")
-    .select(
-      "*, einheit:immo_einheit(id, bezeichnung, objekt:immo_objekt(id, name)), partner:immo_vertragspartner(id, name)",
-    )
-    .eq("id", id)
-    .maybeSingle();
+  const [{ data, error }, { data: dokumente, error: dokumenteError }] = await Promise.all([
+    supabase
+      .from("immo_vertrag")
+      .select(
+        "*, einheit:immo_einheit(id, bezeichnung, objekt:immo_objekt(id, name)), partner:immo_vertragspartner(id, name)",
+      )
+      .eq("id", id)
+      .maybeSingle(),
+    supabase
+      .from("immo_dokument")
+      .select("*")
+      .eq("vertrag_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (error) throw new Error(error.message);
+  if (dokumenteError) throw new Error(dokumenteError.message);
   if (!data) notFound();
 
   const vertrag = data as unknown as Vertrag & {
     einheit: { id: string; bezeichnung: string; objekt: { id: string; name: string } };
     partner: { id: string; name: string } | null;
   };
+  const typedDokumente = (dokumente ?? []) as Dokument[];
 
   return (
     <div className="flex flex-col gap-8">
@@ -87,9 +97,24 @@ export default async function VertragDetailPage({
         </dd>
         <dt className="text-foreground/60">Betrag</dt>
         <dd>{formatCurrency(vertrag.betrag)}</dd>
+        <dt className="text-foreground/60">Kaution</dt>
+        <dd>{formatCurrency(vertrag.kaution)}</dd>
+        <dt className="text-foreground/60">Kündigungsfrist</dt>
+        <dd>{vertrag.kuendigungsfrist_monate ? `${vertrag.kuendigungsfrist_monate} Monate` : "–"}</dd>
+        <dt className="text-foreground/60">Personenzahl</dt>
+        <dd>{vertrag.personenzahl ?? "–"}</dd>
+        <dt className="text-foreground/60">Nebenkosten-Vorauszahlung</dt>
+        <dd>{formatCurrency(vertrag.nebenkosten_vorauszahlung)}</dd>
         <dt className="text-foreground/60">Konditionen</dt>
         <dd className="whitespace-pre-wrap">{vertrag.konditionen ?? "–"}</dd>
       </dl>
+
+      <DokumenteSection
+        dokumente={typedDokumente}
+        parentField="vertrag_id"
+        parentId={vertrag.id}
+        revalidateTargetPath={`/vertraege/${vertrag.id}`}
+      />
     </div>
   );
 }

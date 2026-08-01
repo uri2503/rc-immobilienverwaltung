@@ -25,6 +25,8 @@ function objektPayload(formData: FormData) {
     kaufdatum: toStringOrNull(formData.get("kaufdatum")),
     kaufpreis: toNumberOrNull(formData.get("kaufpreis")),
     verkehrswert: toNumberOrNull(formData.get("verkehrswert")),
+    baujahr: toNumberOrNull(formData.get("baujahr")),
+    verwalter_kontakt: toStringOrNull(formData.get("verwalter_kontakt")),
   };
 }
 

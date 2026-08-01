@@ -18,6 +18,8 @@ function partnerPayload(formData: FormData) {
     email: toStringOrNull(formData.get("email")),
     telefon: toStringOrNull(formData.get("telefon")),
     adresse: toStringOrNull(formData.get("adresse")),
+    iban: toStringOrNull(formData.get("iban")),
+    bic: toStringOrNull(formData.get("bic")),
   };
 }
 

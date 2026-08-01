@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Einheit, Objekt } from "@/lib/types";
+import type { Dokument, Einheit, Objekt } from "@/lib/types";
 import { formatCurrency, formatDate, objektStatusLabel, objektTypLabel } from "@/lib/labels";
 import { badgeClass, buttonClass, cardClass, secondaryButtonClass } from "@/components/form";
 import { DeleteForm } from "@/components/delete-form";
+import { DokumenteSection } from "@/components/dokumente-section";
 import { deleteObjekt } from "../actions";
 
 export default async function ObjektDetailPage({
@@ -15,22 +16,28 @@ export default async function ObjektDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: objekt, error: objektError }, { data: einheiten, error: einheitenError }] =
-    await Promise.all([
-      supabase.from("immo_objekt").select("*").eq("id", id).maybeSingle(),
-      supabase
-        .from("immo_einheit")
-        .select("*")
-        .eq("objekt_id", id)
-        .order("bezeichnung"),
-    ]);
+  const [
+    { data: objekt, error: objektError },
+    { data: einheiten, error: einheitenError },
+    { data: dokumente, error: dokumenteError },
+  ] = await Promise.all([
+    supabase.from("immo_objekt").select("*").eq("id", id).maybeSingle(),
+    supabase.from("immo_einheit").select("*").eq("objekt_id", id).order("bezeichnung"),
+    supabase
+      .from("immo_dokument")
+      .select("*")
+      .eq("objekt_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   if (objektError) throw new Error(objektError.message);
   if (einheitenError) throw new Error(einheitenError.message);
+  if (dokumenteError) throw new Error(dokumenteError.message);
   if (!objekt) notFound();
 
   const typedObjekt = objekt as Objekt;
   const typedEinheiten = (einheiten ?? []) as Einheit[];
+  const typedDokumente = (dokumente ?? []) as Dokument[];
 
   return (
     <div className="flex flex-col gap-8">
@@ -62,6 +69,10 @@ export default async function ObjektDetailPage({
         <dd>{formatCurrency(typedObjekt.kaufpreis)}</dd>
         <dt className="text-foreground/60">Verkehrswert</dt>
         <dd>{formatCurrency(typedObjekt.verkehrswert)}</dd>
+        <dt className="text-foreground/60">Baujahr</dt>
+        <dd>{typedObjekt.baujahr ?? "–"}</dd>
+        <dt className="text-foreground/60">Verwalter/Hausmeister</dt>
+        <dd>{typedObjekt.verwalter_kontakt ?? "–"}</dd>
       </dl>
 
       <section className="flex flex-col gap-4">
@@ -95,6 +106,26 @@ export default async function ObjektDetailPage({
           </ul>
         )}
       </section>
+
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Nebenkosten</h2>
+          <Link href={`/objekte/${typedObjekt.id}/nebenkosten`} className={buttonClass}>
+            Kostenpositionen & Abrechnung
+          </Link>
+        </div>
+        <p className="text-sm text-foreground/60">
+          Jährliche Kostenpositionen erfassen und automatisch auf die Mietverhältnisse
+          umlegen.
+        </p>
+      </section>
+
+      <DokumenteSection
+        dokumente={typedDokumente}
+        parentField="objekt_id"
+        parentId={typedObjekt.id}
+        revalidateTargetPath={`/objekte/${typedObjekt.id}`}
+      />
     </div>
   );
 }

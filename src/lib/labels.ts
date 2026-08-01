@@ -1,8 +1,12 @@
 import type {
+  AbrechnungStatus,
+  DokumentKategorie,
+  Kostenkategorie,
   ObjektStatus,
   ObjektTyp,
   PartnerTyp,
   VertragArt,
+  Verteilerschluessel,
   Zahlungsintervall,
 } from "./types";
 
@@ -42,6 +46,42 @@ export const zahlungsintervallLabel: Record<Zahlungsintervall, string> = {
   halbjaehrlich: "halbjährlich",
   jaehrlich: "jährlich",
   einmalig: "einmalig",
+};
+
+export const dokumentKategorieLabel: Record<DokumentKategorie, string> = {
+  vertrag: "Vertrag",
+  foto: "Foto",
+  versicherung: "Versicherung",
+  protokoll: "Protokoll",
+  sonstiges: "Sonstiges",
+};
+
+export const kostenkategorieLabel: Record<Kostenkategorie, string> = {
+  grundsteuer: "Grundsteuer",
+  versicherung: "Versicherung",
+  hausmeister: "Hausmeister",
+  wasser_abwasser: "Wasser/Abwasser",
+  muellabfuhr: "Müllabfuhr",
+  heizung: "Heizung",
+  allgemeinstrom: "Allgemeinstrom",
+  gebaeudereinigung: "Gebäudereinigung",
+  schornsteinfeger: "Schornsteinfeger",
+  gartenpflege: "Gartenpflege",
+  aufzug: "Aufzug",
+  verwaltung: "Verwaltung",
+  sonstiges: "Sonstiges",
+};
+
+export const verteilerschluesselLabel: Record<Verteilerschluessel, string> = {
+  flaeche: "nach Fläche",
+  einheiten: "nach Einheiten (gleich)",
+  personen: "nach Personenzahl",
+};
+
+export const abrechnungStatusLabel: Record<AbrechnungStatus, string> = {
+  entwurf: "Entwurf",
+  versendet: "Versendet",
+  bezahlt: "Bezahlt",
 };
 
 export function formatCurrency(value: number | null): string {
