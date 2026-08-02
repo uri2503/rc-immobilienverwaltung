@@ -58,6 +58,7 @@ export default async function ObjektDetailPage({
     { data: vertraege, error: vertraegeError },
     { data: kostenpositionen, error: kpError },
     { data: darlehen, error: darlehenError },
+    { data: solarertraege, error: solarertragError },
   ] = await Promise.all([
     einheitIds.length > 0
       ? supabase
@@ -67,11 +68,15 @@ export default async function ObjektDetailPage({
       : Promise.resolve({ data: [], error: null }),
     supabase.from("immo_kostenposition").select("betrag").eq("objekt_id", id).eq("jahr", jahr),
     supabase.from("immo_darlehen").select("*").eq("objekt_id", id),
+    supabase.from("immo_solarertrag").select("erloes").eq("objekt_id", id).eq("jahr", jahr),
   ]);
 
   if (vertraegeError) throw new Error(vertraegeError.message);
   if (kpError) throw new Error(kpError.message);
   if (darlehenError) throw new Error(darlehenError.message);
+  if (solarertragError) throw new Error(solarertragError.message);
+
+  const solarertragGesamt = (solarertraege ?? []).reduce((sum, s) => sum + s.erloes, 0);
 
   const typedDarlehen = (darlehen ?? []) as Darlehen[];
   const annuitaeten = typedDarlehen.map((d) => berechneAnnuitaetJahr(d, jahr));
@@ -83,10 +88,13 @@ export default async function ObjektDetailPage({
   );
   const darlehenssummeGesamt = typedDarlehen.reduce((sum, d) => sum + d.darlehenssumme, 0);
 
-  const cashflow = berechneCashflow(jahr, vertraege ?? [], kostenpositionen ?? [], {
-    zinsenGesamt,
-    tilgungGesamt,
-  });
+  const cashflow = berechneCashflow(
+    jahr,
+    vertraege ?? [],
+    kostenpositionen ?? [],
+    { zinsenGesamt, tilgungGesamt },
+    solarertragGesamt,
+  );
   const bruttomietrendite = berechneBruttomietrendite(
     cashflow.einnahmenKaltmiete,
     typedObjekt.kaufpreis ?? typedObjekt.verkehrswert,
@@ -131,6 +139,14 @@ export default async function ObjektDetailPage({
         <dd>{typedObjekt.baujahr ?? "–"}</dd>
         <dt className="text-foreground/60">Verwalter/Hausmeister</dt>
         <dd>{typedObjekt.verwalter_kontakt ?? "–"}</dd>
+        {typedObjekt.typ === "solarpark" && (
+          <>
+            <dt className="text-foreground/60">Installierte Leistung</dt>
+            <dd>{typedObjekt.leistung_kwp ? `${typedObjekt.leistung_kwp} kWp` : "–"}</dd>
+            <dt className="text-foreground/60">Inbetriebnahme</dt>
+            <dd>{formatDate(typedObjekt.inbetriebnahme)}</dd>
+          </>
+        )}
       </dl>
 
       <section className="flex flex-col gap-3">
@@ -149,6 +165,14 @@ export default async function ObjektDetailPage({
               {formatCurrency(cashflow.einnahmenGesamt)}
             </div>
           </div>
+          {typedObjekt.typ === "solarpark" && (
+            <div className={cardClass}>
+              <div className="text-xs text-foreground/60">davon Solarertrag</div>
+              <div className="mt-1 text-xl font-semibold tracking-tight">
+                {formatCurrency(cashflow.einnahmenSonstige)}
+              </div>
+            </div>
+          )}
           <div className={cardClass}>
             <div className="text-xs text-foreground/60">Betriebskosten</div>
             <div className="mt-1 text-xl font-semibold tracking-tight">
@@ -250,6 +274,21 @@ export default async function ObjektDetailPage({
           </ul>
         )}
       </section>
+
+      {typedObjekt.typ === "solarpark" && (
+        <section className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold tracking-tight">Solarertrag</h2>
+            <Link href={`/objekte/${typedObjekt.id}/solarertrag`} className={buttonClass}>
+              Erträge verwalten
+            </Link>
+          </div>
+          <p className="text-sm text-foreground/60">
+            Monatliche Einspeisemenge und Vergütungssatz erfassen — deckt EEG-Festvergütung und
+            Direktvermarktung gleichermaßen ab, fließt automatisch in die Kennzahlen oben ein.
+          </p>
+        </section>
+      )}
 
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">

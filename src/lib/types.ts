@@ -131,6 +131,20 @@ export interface Objekt {
   verkehrswert: number | null;
   baujahr: number | null;
   verwalter_kontakt: string | null;
+  leistung_kwp: number | null;
+  inbetriebnahme: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Solarertrag {
+  id: string;
+  objekt_id: string;
+  jahr: number;
+  monat: number;
+  eingespeiste_menge_kwh: number;
+  verguetung_ct_kwh: number;
+  erloes: number;
   created_at: string;
   updated_at: string;
 }

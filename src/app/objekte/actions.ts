@@ -27,6 +27,8 @@ function objektPayload(formData: FormData) {
     verkehrswert: toNumberOrNull(formData.get("verkehrswert")),
     baujahr: toNumberOrNull(formData.get("baujahr")),
     verwalter_kontakt: toStringOrNull(formData.get("verwalter_kontakt")),
+    leistung_kwp: toNumberOrNull(formData.get("leistung_kwp")),
+    inbetriebnahme: toStringOrNull(formData.get("inbetriebnahme")),
   };
 }
 

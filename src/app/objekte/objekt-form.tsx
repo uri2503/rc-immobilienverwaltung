@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
-import type { Objekt } from "@/lib/types";
+import { useActionState, useState } from "react";
+import type { Objekt, ObjektTyp } from "@/lib/types";
 import { OBJEKT_STATUS, OBJEKT_TYPEN } from "@/lib/types";
 import { objektStatusLabel, objektTypLabel } from "@/lib/labels";
 import { Field, buttonClass, inputClass, secondaryButtonClass } from "@/components/form";
@@ -18,6 +18,7 @@ export function ObjektForm({
   action: (prevState: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
   const [state, formAction, isPending] = useActionState(action, initialActionState);
+  const [typ, setTyp] = useState<ObjektTyp>(objekt?.typ ?? OBJEKT_TYPEN[0]);
 
   return (
     <form action={formAction} className="flex max-w-xl flex-col gap-4">
@@ -48,7 +49,8 @@ export function ObjektForm({
             id="typ"
             name="typ"
             required
-            defaultValue={objekt?.typ ?? OBJEKT_TYPEN[0]}
+            value={typ}
+            onChange={(event) => setTyp(event.target.value as ObjektTyp)}
             className={inputClass}
           >
             {OBJEKT_TYPEN.map((typ) => (
@@ -132,6 +134,31 @@ export function ObjektForm({
           />
         </Field>
       </div>
+
+      {typ === "solarpark" && (
+        <div className="grid grid-cols-2 gap-4 rounded-lg border border-accent/30 bg-accent-soft/40 p-4">
+          <Field label="Installierte Leistung (kWp)" htmlFor="leistung_kwp">
+            <input
+              id="leistung_kwp"
+              name="leistung_kwp"
+              type="number"
+              step="0.01"
+              defaultValue={objekt?.leistung_kwp ?? ""}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Inbetriebnahme" htmlFor="inbetriebnahme">
+            <input
+              id="inbetriebnahme"
+              name="inbetriebnahme"
+              type="date"
+              defaultValue={objekt?.inbetriebnahme ?? ""}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+      )}
 
       <div className="flex gap-3 pt-2">
         <button type="submit" disabled={isPending} className={buttonClass}>

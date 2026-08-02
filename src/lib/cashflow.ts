@@ -22,6 +22,7 @@ export interface CashflowErgebnis {
   jahr: number;
   einnahmenKaltmiete: number;
   einnahmenNebenkosten: number;
+  einnahmenSonstige: number;
   einnahmenGesamt: number;
   betriebskostenGesamt: number;
   zinsenGesamt: number;
@@ -53,6 +54,7 @@ export function berechneCashflow(
   vertraege: VertragCashflowInput[],
   kostenpositionen: KostenpositionCashflowInput[],
   finanzierung: FinanzierungCashflowInput = { zinsenGesamt: 0, tilgungGesamt: 0 },
+  einnahmenSonstige = 0,
 ): CashflowErgebnis {
   let einnahmenKaltmiete = 0;
   let einnahmenNebenkosten = 0;
@@ -75,7 +77,7 @@ export function berechneCashflow(
   }
 
   const betriebskostenGesamt = kostenpositionen.reduce((sum, k) => sum + k.betrag, 0);
-  const einnahmenGesamt = einnahmenKaltmiete + einnahmenNebenkosten;
+  const einnahmenGesamt = einnahmenKaltmiete + einnahmenNebenkosten + einnahmenSonstige;
   const ergebnisVorTilgung = einnahmenGesamt - betriebskostenGesamt - finanzierung.zinsenGesamt;
   const cashflowNachTilgung = ergebnisVorTilgung - finanzierung.tilgungGesamt;
 
@@ -83,6 +85,7 @@ export function berechneCashflow(
     jahr,
     einnahmenKaltmiete: Math.round(einnahmenKaltmiete * 100) / 100,
     einnahmenNebenkosten: Math.round(einnahmenNebenkosten * 100) / 100,
+    einnahmenSonstige: Math.round(einnahmenSonstige * 100) / 100,
     einnahmenGesamt: Math.round(einnahmenGesamt * 100) / 100,
     betriebskostenGesamt: Math.round(betriebskostenGesamt * 100) / 100,
     zinsenGesamt: Math.round(finanzierung.zinsenGesamt * 100) / 100,
