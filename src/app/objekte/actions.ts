@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionState } from "@/lib/action-state";
-import type { ObjektStatus, ObjektTyp } from "@/lib/types";
+import type { ObjektNutzung, ObjektStatus, ObjektTyp } from "@/lib/types";
 
 function toNumberOrNull(value: FormDataEntryValue | null): number | null {
   if (!value || value.toString().trim() === "") return null;
@@ -16,17 +16,28 @@ function toStringOrNull(value: FormDataEntryValue | null): string | null {
   return value.toString();
 }
 
+function toEnumOrNull<T extends string>(value: FormDataEntryValue | null): T | null {
+  if (!value || value.toString().trim() === "") return null;
+  return value.toString() as T;
+}
+
 function objektPayload(formData: FormData) {
   return {
     name: String(formData.get("name")),
     adresse: toStringOrNull(formData.get("adresse")),
     typ: String(formData.get("typ")) as ObjektTyp,
     status: String(formData.get("status")) as ObjektStatus,
+    nutzung: toEnumOrNull<ObjektNutzung>(formData.get("nutzung")),
+    flaeche_qm: toNumberOrNull(formData.get("flaeche_qm")),
     kaufdatum: toStringOrNull(formData.get("kaufdatum")),
     kaufpreis: toNumberOrNull(formData.get("kaufpreis")),
     verkehrswert: toNumberOrNull(formData.get("verkehrswert")),
     baujahr: toNumberOrNull(formData.get("baujahr")),
     verwalter_kontakt: toStringOrNull(formData.get("verwalter_kontakt")),
+    verwalter_telefon: toStringOrNull(formData.get("verwalter_telefon")),
+    grundbuch: toStringOrNull(formData.get("grundbuch")),
+    versicherung_gesellschaft: toStringOrNull(formData.get("versicherung_gesellschaft")),
+    energieausweis_gueltig_bis: toStringOrNull(formData.get("energieausweis_gueltig_bis")),
     leistung_kwp: toNumberOrNull(formData.get("leistung_kwp")),
     inbetriebnahme: toStringOrNull(formData.get("inbetriebnahme")),
   };

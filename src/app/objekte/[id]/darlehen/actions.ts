@@ -18,6 +18,8 @@ function darlehenPayload(formData: FormData) {
     anfaenglicher_tilgungssatz_prozent: Number(formData.get("anfaenglicher_tilgungssatz_prozent")),
     beginn: String(formData.get("beginn")),
     zinsbindung_bis: toStringOrNull(formData.get("zinsbindung_bis")),
+    bank_ansprechpartner: toStringOrNull(formData.get("bank_ansprechpartner")),
+    bank_telefon: toStringOrNull(formData.get("bank_telefon")),
   };
 }
 

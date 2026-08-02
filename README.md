@@ -29,8 +29,13 @@ optional per einseitiger Zusammenfassungs-Brücke mit dem Betriebspass verbunden
 ## Datenmodell-Entwurf
 
 - **Objekt** — Immobilie oder Anlage. Felder u. a. Name, Adresse, Typ
-  (Wohnhaus/Gewerbe/Gewerbepark/Solarpark/Grundstück), Status
-  (Planung/Bau/Betrieb), Kaufdatum, Kaufpreis, Verkehrswert.
+  (Wohnhaus/Eigentumswohnung/Gewerbe/Gewerbepark/Solarpark/Grundstück/Sonstige),
+  Status (Planung/Bau/Betrieb), Nutzung (Eigennutzung/Vermietet/Teilweise
+  vermietet), Kaufdatum, Kaufpreis, Verkehrswert, Baujahr, Fläche,
+  Grundbuchblatt/Flurstück, Verwalter/Hausmeister-Kontakt (+Telefon),
+  Versicherung/Gesellschaft, Energieausweis gültig bis. Typ- und Nutzungswerte
+  sowie die zusätzlichen Felder sind bewusst an das Immobilien-Modul des
+  Betriebspasses angeglichen (siehe „Betriebspass-Brücke" unten).
 - **Einheit** — vermiet-/verpachtbare Teileinheit eines Objekts. Bei
   Einzelmieter-Objekten (Aktionmarkt, Bochum) genau eine Einheit = das ganze
   Gebäude.
@@ -43,6 +48,38 @@ optional per einseitiger Zusammenfassungs-Brücke mit dem Betriebspass verbunden
 Bewusst noch offen: Kostenpositionen/Verteilerschlüssel für die
 Betriebskostenabrechnung sowie das konkrete Solar-Ertragsmodell (abhängig von
 EEG vs. Direktvermarktung — noch zu klären, da die Anlage aktuell im Bau ist).
+
+## Betriebspass-Brücke: Feldabgleich
+
+Vorbereitung für Fahrplan-Punkt 7 (einseitige Zusammenfassung nach
+`betriebspass_eintraege`, `modul='immobilien'`). Die `data`-Spalte dort ist
+ein JSON-Blob mit den Keys des Betriebspass-Formulars (`app.html`, Modul
+`immobilien`) — die Tabelle zeigt, welches `immo_objekt`/`immo_darlehen`-Feld
+beim Sync auf welchen Betriebspass-Key abgebildet wird.
+
+| Betriebspass-Key (`immobilien`) | Immobilienverwaltung |
+|---|---|
+| `bezeichnung` | `immo_objekt.name` (+ `.adresse`) |
+| `typ` | `immo_objekt.typ` |
+| `nutzung` | `immo_objekt.nutzung` |
+| `kaufdatum` | `immo_objekt.kaufdatum` |
+| `kaufpreis` | `immo_objekt.kaufpreis` |
+| `verkehrswert` | `immo_objekt.verkehrswert` |
+| `flaeche` | `immo_objekt.flaeche_qm` |
+| `grundbuch` | `immo_objekt.grundbuch` |
+| `bank` / `bankAnsprechpartner` / `bankTelefon` | `immo_darlehen.bezeichnung` / `.bank_ansprechpartner` / `.bank_telefon` (führendes Darlehen des Objekts) |
+| `restschuld` | berechnet aus `immo_darlehen` (Tilgungsplan, `restschuldAmStichtag`) |
+| `verwaltung` / `verwaltungTelefon` | `immo_objekt.verwalter_kontakt` / `.verwalter_telefon` |
+| `versicherung` | `immo_objekt.versicherung_gesellschaft` |
+| `grundsteuer` | berechnet aus `immo_kostenposition` (Kategorie `grundsteuer`, laufendes Jahr) |
+| `mieter` | `immo_vertragspartner` über `immo_vertrag`/`immo_einheit` |
+| `mieteinnahmen` | berechnet aus `immo_vertrag.betrag` (aktive Verträge) |
+| `energieausweis` | `immo_objekt.energieausweis_gueltig_bis` |
+| `notiz` | *(kein Äquivalent — optional bei Bedarf ergänzen)* |
+
+Typen ohne direktes Betriebspass-Gegenstück (`gewerbepark`, `solarpark`)
+laufen beim Sync 1:1 durch, sobald das Betriebspass-Dropdown um diese Werte
+erweitert wird.
 
 ## Tech-Stack
 
