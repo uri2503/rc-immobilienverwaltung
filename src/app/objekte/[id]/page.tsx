@@ -6,6 +6,7 @@ import {
   formatCurrency,
   formatDate,
   formatPercent,
+  objektNutzungLabel,
   objektStatusLabel,
   objektTypLabel,
 } from "@/lib/labels";
@@ -129,6 +130,10 @@ export default async function ObjektDetailPage({
       <dl className={`grid max-w-xl grid-cols-2 gap-x-4 gap-y-3 text-sm ${cardClass}`}>
         <dt className="text-foreground/60">Adresse</dt>
         <dd>{typedObjekt.adresse ?? "–"}</dd>
+        <dt className="text-foreground/60">Nutzung</dt>
+        <dd>{typedObjekt.nutzung ? objektNutzungLabel[typedObjekt.nutzung] : "–"}</dd>
+        <dt className="text-foreground/60">Fläche</dt>
+        <dd>{typedObjekt.flaeche_qm ? `${typedObjekt.flaeche_qm} m²` : "–"}</dd>
         <dt className="text-foreground/60">Kaufdatum</dt>
         <dd>{formatDate(typedObjekt.kaufdatum)}</dd>
         <dt className="text-foreground/60">Kaufpreis</dt>
@@ -137,8 +142,16 @@ export default async function ObjektDetailPage({
         <dd>{formatCurrency(typedObjekt.verkehrswert)}</dd>
         <dt className="text-foreground/60">Baujahr</dt>
         <dd>{typedObjekt.baujahr ?? "–"}</dd>
+        <dt className="text-foreground/60">Grundbuchblatt / Flurstück</dt>
+        <dd>{typedObjekt.grundbuch ?? "–"}</dd>
         <dt className="text-foreground/60">Verwalter/Hausmeister</dt>
         <dd>{typedObjekt.verwalter_kontakt ?? "–"}</dd>
+        <dt className="text-foreground/60">Verwaltung Telefon</dt>
+        <dd>{typedObjekt.verwalter_telefon ?? "–"}</dd>
+        <dt className="text-foreground/60">Versicherung / Gesellschaft</dt>
+        <dd>{typedObjekt.versicherung_gesellschaft ?? "–"}</dd>
+        <dt className="text-foreground/60">Energieausweis gültig bis</dt>
+        <dd>{formatDate(typedObjekt.energieausweis_gueltig_bis)}</dd>
         {typedObjekt.typ === "solarpark" && (
           <>
             <dt className="text-foreground/60">Installierte Leistung</dt>

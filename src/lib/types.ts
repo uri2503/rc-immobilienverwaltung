@@ -1,11 +1,17 @@
 export type ObjektTyp =
   | "wohnhaus"
+  | "eigentumswohnung"
   | "gewerbe"
   | "gewerbepark"
   | "solarpark"
-  | "grundstueck";
+  | "grundstueck"
+  | "sonstige";
 
 export type ObjektStatus = "planung" | "bau" | "betrieb";
+
+// Deckt sich mit dem "Nutzung"-Feld des Immobilien-Moduls im Betriebspass —
+// Grundlage für die spätere einseitige Zusammenfassungs-Brücke (README, Fahrplan Punkt 7).
+export type ObjektNutzung = "eigennutzung" | "vermietet" | "teilweise_vermietet";
 
 export type PartnerTyp =
   | "mieter"
@@ -58,13 +64,21 @@ export type AbrechnungStatus = "entwurf" | "versendet" | "bezahlt";
 
 export const OBJEKT_TYPEN: ObjektTyp[] = [
   "wohnhaus",
+  "eigentumswohnung",
   "gewerbe",
   "gewerbepark",
   "solarpark",
   "grundstueck",
+  "sonstige",
 ];
 
 export const OBJEKT_STATUS: ObjektStatus[] = ["planung", "bau", "betrieb"];
+
+export const OBJEKT_NUTZUNGEN: ObjektNutzung[] = [
+  "eigennutzung",
+  "vermietet",
+  "teilweise_vermietet",
+];
 
 export const PARTNER_TYPEN: PartnerTyp[] = [
   "mieter",
@@ -131,8 +145,14 @@ export interface Objekt {
   verkehrswert: number | null;
   baujahr: number | null;
   verwalter_kontakt: string | null;
+  verwalter_telefon: string | null;
   leistung_kwp: number | null;
   inbetriebnahme: string | null;
+  nutzung: ObjektNutzung | null;
+  flaeche_qm: number | null;
+  grundbuch: string | null;
+  versicherung_gesellschaft: string | null;
+  energieausweis_gueltig_bis: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -233,6 +253,8 @@ export interface Darlehen {
   anfaenglicher_tilgungssatz_prozent: number;
   beginn: string;
   zinsbindung_bis: string | null;
+  bank_ansprechpartner: string | null;
+  bank_telefon: string | null;
   created_at: string;
   updated_at: string;
 }

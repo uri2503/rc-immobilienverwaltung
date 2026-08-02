@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from "react";
 import type { Objekt, ObjektTyp } from "@/lib/types";
-import { OBJEKT_STATUS, OBJEKT_TYPEN } from "@/lib/types";
-import { objektStatusLabel, objektTypLabel } from "@/lib/labels";
+import { OBJEKT_NUTZUNGEN, OBJEKT_STATUS, OBJEKT_TYPEN } from "@/lib/types";
+import { objektNutzungLabel, objektStatusLabel, objektTypLabel } from "@/lib/labels";
 import { Field, buttonClass, inputClass, secondaryButtonClass } from "@/components/form";
 import { FormError } from "@/components/form-error";
 import type { ActionState } from "@/lib/action-state";
@@ -78,6 +78,35 @@ export function ObjektForm({
         </Field>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Nutzung" htmlFor="nutzung">
+          <select
+            id="nutzung"
+            name="nutzung"
+            defaultValue={objekt?.nutzung ?? ""}
+            className={inputClass}
+          >
+            <option value="">— wählen —</option>
+            {OBJEKT_NUTZUNGEN.map((nutzung) => (
+              <option key={nutzung} value={nutzung}>
+                {objektNutzungLabel[nutzung]}
+              </option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Wohn-/Grundstücksfläche (m²)" htmlFor="flaeche_qm">
+          <input
+            id="flaeche_qm"
+            name="flaeche_qm"
+            type="number"
+            step="0.01"
+            defaultValue={objekt?.flaeche_qm ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
       <Field label="Kaufdatum" htmlFor="kaufdatum">
         <input
           id="kaufdatum"
@@ -128,8 +157,49 @@ export function ObjektForm({
           <input
             id="verwalter_kontakt"
             name="verwalter_kontakt"
-            placeholder="Name, Telefon, E-Mail"
+            placeholder="Name, E-Mail"
             defaultValue={objekt?.verwalter_kontakt ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Verwaltung Telefon" htmlFor="verwalter_telefon">
+          <input
+            id="verwalter_telefon"
+            name="verwalter_telefon"
+            defaultValue={objekt?.verwalter_telefon ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Grundbuchblatt / Flurstück" htmlFor="grundbuch">
+          <input
+            id="grundbuch"
+            name="grundbuch"
+            defaultValue={objekt?.grundbuch ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Versicherung / Gesellschaft" htmlFor="versicherung_gesellschaft">
+          <input
+            id="versicherung_gesellschaft"
+            name="versicherung_gesellschaft"
+            defaultValue={objekt?.versicherung_gesellschaft ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Energieausweis gültig bis" htmlFor="energieausweis_gueltig_bis">
+          <input
+            id="energieausweis_gueltig_bis"
+            name="energieausweis_gueltig_bis"
+            type="date"
+            defaultValue={objekt?.energieausweis_gueltig_bis ?? ""}
             className={inputClass}
           />
         </Field>

@@ -97,6 +97,26 @@ export function DarlehenForm({
         />
       </Field>
 
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Bank Ansprechpartner" htmlFor="bank_ansprechpartner">
+          <input
+            id="bank_ansprechpartner"
+            name="bank_ansprechpartner"
+            defaultValue={darlehen?.bank_ansprechpartner ?? ""}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Bank Telefon" htmlFor="bank_telefon">
+          <input
+            id="bank_telefon"
+            name="bank_telefon"
+            defaultValue={darlehen?.bank_telefon ?? ""}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
       <p className="text-xs text-foreground/60">
         Die monatliche Rate ergibt sich aus Zinssatz + anfänglichem Tilgungssatz und bleibt über
         die Laufzeit konstant (Annuitätendarlehen) — der Zinsanteil sinkt, der Tilgungsanteil

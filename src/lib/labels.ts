@@ -2,6 +2,7 @@ import type {
   AbrechnungStatus,
   DokumentKategorie,
   Kostenkategorie,
+  ObjektNutzung,
   ObjektStatus,
   ObjektTyp,
   PartnerTyp,
@@ -12,16 +13,24 @@ import type {
 
 export const objektTypLabel: Record<ObjektTyp, string> = {
   wohnhaus: "Wohnhaus",
+  eigentumswohnung: "Eigentumswohnung",
   gewerbe: "Gewerbe",
   gewerbepark: "Gewerbepark",
   solarpark: "Solarpark",
   grundstueck: "Grundstück",
+  sonstige: "Sonstige",
 };
 
 export const objektStatusLabel: Record<ObjektStatus, string> = {
   planung: "Planung",
   bau: "Bau",
   betrieb: "Betrieb",
+};
+
+export const objektNutzungLabel: Record<ObjektNutzung, string> = {
+  eigennutzung: "Eigennutzung",
+  vermietet: "Vermietet",
+  teilweise_vermietet: "Teilweise vermietet",
 };
 
 export const partnerTypLabel: Record<PartnerTyp, string> = {
