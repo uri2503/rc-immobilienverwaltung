@@ -50,7 +50,10 @@ export async function createObjekt(
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("immo_objekt")
-    .insert(objektPayload(formData))
+    // Solange es kein eigenes Login gibt (siehe README), ordnen wir neue
+    // Objekte explizit dem einzigen Account zu, statt uns auf den (mangels
+    // Session leeren) auth.uid()-Spaltendefault zu verlassen.
+    .insert({ ...objektPayload(formData), user_id: process.env.BETRIEBSPASS_SYNC_USER_ID ?? null })
     .select("id")
     .single();
 

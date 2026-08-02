@@ -20,6 +20,7 @@ import {
 } from "@/lib/cashflow";
 import { berechneAnnuitaetJahr, restschuldAmStichtag } from "@/lib/darlehen";
 import { deleteObjekt } from "../actions";
+import { BetriebspassSyncButton } from "./betriebspass-sync-button";
 
 export default async function ObjektDetailPage({
   params,
@@ -116,7 +117,8 @@ export default async function ObjektDetailPage({
             <span className={badgeClass("accent")}>{objektStatusLabel[typedObjekt.status]}</span>
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-start gap-3">
+          <BetriebspassSyncButton objektId={typedObjekt.id} />
           <Link href={`/objekte/${typedObjekt.id}/bearbeiten`} className={secondaryButtonClass}>
             Bearbeiten
           </Link>

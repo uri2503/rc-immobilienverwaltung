@@ -31,7 +31,7 @@ export interface CashflowErgebnis {
   cashflowNachTilgung: number;
 }
 
-const JAHRESFAKTOR: Record<Zahlungsintervall, number> = {
+export const JAHRESFAKTOR: Record<Zahlungsintervall, number> = {
   monatlich: 12,
   vierteljaehrlich: 4,
   halbjaehrlich: 2,

@@ -51,11 +51,31 @@ EEG vs. Direktvermarktung — noch zu klären, da die Anlage aktuell im Bau ist)
 
 ## Betriebspass-Brücke: Feldabgleich
 
-Vorbereitung für Fahrplan-Punkt 7 (einseitige Zusammenfassung nach
-`betriebspass_eintraege`, `modul='immobilien'`). Die `data`-Spalte dort ist
-ein JSON-Blob mit den Keys des Betriebspass-Formulars (`app.html`, Modul
-`immobilien`) — die Tabelle zeigt, welches `immo_objekt`/`immo_darlehen`-Feld
-beim Sync auf welchen Betriebspass-Key abgebildet wird.
+Fahrplan-Punkt 7 (einseitige Zusammenfassung nach `betriebspass_eintraege`,
+`modul='immobilien'`) ist umgesetzt: Button „Nach Betriebspass übertragen"
+auf der Objekt-Detailseite (`src/app/objekte/[id]/betriebspass-sync-button.tsx`,
+Server Action `betriebspass-sync-actions.ts`). Bewusst manuell pro Objekt
+ausgelöst, kein Hintergrund-Job — passt zum Prinzip „einseitige
+Zusammenfassung, kein Zwei-Wege-Sync". Erneutes Übertragen desselben Objekts
+aktualisiert den bestehenden Betriebspass-Eintrag (Zuordnung über den
+versteckten Marker-Key `_immoObjektId` im JSON-Blob), statt Duplikate
+anzulegen.
+
+Da die Immobilienverwaltung noch kein eigenes Login hat (siehe Abschnitt
+„Auth-Status" unten), schreibt die Sync-Aktion serverseitig über einen
+Service-Role-Client (`src/lib/supabase/service.ts`) direkt in
+`betriebspass_eintraege` — dessen RLS-Policy ist strikt auf
+`auth.uid() = user_id` beschränkt und wäre sonst für die Immo-App
+unerreichbar. Erfordert zwei serverseitige Env-Vars (siehe `.env.example`):
+`SUPABASE_SERVICE_ROLE_KEY` und `BETRIEBSPASS_SYNC_USER_ID` (die
+`auth.users.id` des Betriebspass-Accounts, in den synchronisiert wird — ohne
+diese Vars bricht der Button kontrolliert mit einer Fehlermeldung ab, statt
+fehlzuschlagen).
+
+Die `data`-Spalte in `betriebspass_eintraege` ist ein JSON-Blob mit den Keys
+des Betriebspass-Formulars (`app.html`, Modul `immobilien`) — die Tabelle
+zeigt, welches `immo_objekt`/`immo_darlehen`-Feld beim Sync auf welchen
+Betriebspass-Key abgebildet wird.
 
 | Betriebspass-Key (`immobilien`) | Immobilienverwaltung |
 |---|---|
@@ -78,8 +98,20 @@ beim Sync auf welchen Betriebspass-Key abgebildet wird.
 | `notiz` | *(kein Äquivalent — optional bei Bedarf ergänzen)* |
 
 Typen ohne direktes Betriebspass-Gegenstück (`gewerbepark`, `solarpark`)
-laufen beim Sync 1:1 durch, sobald das Betriebspass-Dropdown um diese Werte
-erweitert wird.
+laufen beim Sync 1:1 durch — das Betriebspass-Dropdown wurde entsprechend
+erweitert.
+
+## Auth-Status
+
+Es gibt aktuell **kein Login**: kein Supabase-Auth-Flow, keine Middleware,
+keine geschützten Routen. Die App ist bewusst pragmatisch als
+De-facto-Single-Tenant-Tool für einen Account betrieben (RLS-Policy
+`prototype_open` = offen für alle; `user_id`-Spalten werden serverseitig auf
+den in `BETRIEBSPASS_SYNC_USER_ID` hinterlegten Account gesetzt, nicht über
+eine echte Session). Das ist eine bewusste Abkürzung, keine Dauerlösung —
+vor einem Rollout an weitere Nutzer oder öffentlicher Bekanntgabe der URL
+braucht es echtes Login + verschärfte RLS (`auth.uid() = user_id`, analog
+`bp_own_entries` im Betriebspass).
 
 ## Tech-Stack
 
@@ -98,3 +130,5 @@ Aggregation) spricht einiges für Letzteres.
    an einen Mieter)
 6. Solarpark: Ertragsmodell, sobald ans Netz gegangen
 7. Brücke zum Betriebspass (einseitige Zusammenfassung, kein Zwei-Wege-Sync)
+   *(erledigt — siehe „Betriebspass-Brücke" oben; Login/RLS-Verschärfung
+   bewusst zurückgestellt, siehe „Auth-Status")*
